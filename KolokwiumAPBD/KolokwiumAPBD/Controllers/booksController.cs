@@ -9,7 +9,7 @@ public class booksController : ControllerBase
 {
     private readonly string _connectionString = "Data Source=db-mssql;Initial Catalog=2019SBD;Integrated Security=True;Trust Server Certificate=True";
 
-    [HttpGet]
+    [HttpGet("{id:int}/genres")]
     public IActionResult getBooks(int id)
     {
         List<String> books = new List<string>();
@@ -17,7 +17,7 @@ public class booksController : ControllerBase
         using (SqlConnection connection = new SqlConnection(_connectionString))
         {
             connection.Open();
-            SqlCommand command = new SqlCommand("SELECT books.title FROM books_genres JOIN books ON FK_book=books.PK JOIN genres ON genres.PK=books_genres.FK_genre WHERE PK = @id", connection);
+            SqlCommand command = new SqlCommand("SELECT books.title FROM books_genres JOIN books ON FK_book=books.PK JOIN genres ON genres.PK=books_genres.FK_genre WHERE books.PK = @id", connection);
             command.Parameters.AddWithValue("@Id", id);
             var reader = command.ExecuteReader();
             int title = reader.GetOrdinal("title");
@@ -25,7 +25,7 @@ public class booksController : ControllerBase
             {
                 books.Add(reader.GetString(title));
             }
-            SqlCommand command2 = new SqlCommand("SELECT genres.name FROM books_genres JOIN books ON FK_book=books.PK JOIN genres ON genres.PK=books_genres.FK_genre WHERE PK = @id", connection);
+            SqlCommand command2 = new SqlCommand("SELECT genres.name FROM books_genres JOIN books ON FK_book=books.PK JOIN genres ON genres.PK=books_genres.FK_genre WHERE books.PK = @id", connection);
             command2.Parameters.AddWithValue("@Id", id);
             var reader2 = command2.ExecuteReader();
             int genre = reader.GetOrdinal("title");
@@ -43,7 +43,7 @@ public class booksController : ControllerBase
     {
         using (SqlConnection connection = new SqlConnection(_connectionString))
         {
-            SqlCommand command = new SqlCommand("INSERT INTO book(title) VALUES @title", connection);
+            SqlCommand command = new SqlCommand("INSERT INTO books(title) VALUES (@title)", connection);
             command.Parameters.AddWithValue("@title", book.title);
             command.ExecuteNonQuery();
             SqlCommand getPKforBook = new SqlCommand("SELECT pk from books WHERE title = @title", connection);
@@ -63,6 +63,6 @@ public class booksController : ControllerBase
                 command2.ExecuteNonQuery();
             }
         }
-        return Ok();
+        return StatusCode(201);
     }
 }
